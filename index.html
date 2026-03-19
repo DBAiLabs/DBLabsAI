@@ -250,6 +250,186 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 @keyframes sh{0%,100%{opacity:.4}50%{opacity:.9}}
 .ld{animation:sh 1.2s ease-in-out infinite;}
+
+/* ══════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — Stock Terminal
+   Breakpoints: ≤768px phone, ≤1024px tablet
+   Strategy:
+   • Phone: tabbed single-panel view (Watchlist / Chart / AI)
+   • Tablet: 2-col (watchlist collapsed, chart + AI)
+   ══════════════════════════════════════════════════════ */
+
+/* ── Tablet (≤1024px) ── */
+@media(max-width:1024px){
+  .body{grid-template-columns:200px 1fr 0;}
+  .aip{display:none;}
+  /* Floating AI toggle button */
+  .ai-float-btn{display:flex;}
+  /* Tighter timeframe bar */
+  .tf-divider{display:none;}
+  .tfgrp{border-right:none;padding-right:2px;margin-right:2px;}
+  .tfbtn{padding:3px 6px;font-size:9px;}
+  /* Shrink header */
+  .hdr-c .dt{display:none;}
+  .hdr-c .mpill:last-child{display:none;}
+}
+
+/* ── Phone (≤768px) ── */
+@media(max-width:768px){
+  /* Kill the 3-col desktop grid entirely */
+  html,body{height:100%;overflow:hidden;}
+  body{font-size:11px;}
+
+  /* ── Header ── */
+  .hdr{padding:0 12px;height:44px;}
+  .hdr-c{gap:8px;}
+  .hdr-c .mpill{display:none;}
+  .hdr-c .dt{display:none;}
+  .clk{font-size:12px;}
+  .mbadge{display:none;}
+
+  /* ── Nav tabs — horizontal scroll ── */
+  .navtabs{padding:0 8px;overflow-x:auto;gap:0;}
+  .navtabs::-webkit-scrollbar{display:none;}
+  .ntab{padding:7px 12px;font-size:10px;letter-spacing:.07em;white-space:nowrap;}
+
+  /* ── Ticker tape — faster on small screen ── */
+  .tape{height:22px;}
+  .tape-i{animation-duration:30s;}
+  .ti{padding:0 12px;font-size:10px;gap:6px;}
+
+  /* ── MOBILE TAB SYSTEM ── */
+  /* Hide ALL panels by default — JS controls .mob-active */
+  .body{
+    display:flex;
+    flex-direction:column;
+    flex:1;
+    overflow:hidden;
+    position:relative;
+  }
+  .wlp,.cp,.aip{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s;
+  }
+  .wlp.mob-active,.cp.mob-active,.aip.mob-active{
+    opacity:1;
+    pointer-events:all;
+  }
+  /* Remove desktop borders between panels */
+  .wlp{border-right:none;}
+  .aip{border-left:none;}
+
+  /* ── Mobile bottom tab bar ── */
+  .mob-tabbar{
+    display:flex;
+    background:var(--panel);
+    border-top:1px solid var(--b2);
+    flex-shrink:0;
+    z-index:50;
+  }
+  .mob-tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:8px 4px 6px;gap:3px;
+    cursor:pointer;transition:all .2s;
+    border:none;background:none;
+    font-family:var(--fm);font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--tm);border-top:2px solid transparent;
+  }
+  .mob-tab.on{color:var(--cy);border-top-color:var(--cy);}
+  .mob-tab svg{width:18px;height:18px;}
+
+  /* ── Watchlist panel mobile ── */
+  .wlp .ph{padding:8px 12px;}
+  .wll{overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .wli{padding:10px 12px;}
+  .wsym{font-size:15px;}
+  .wnam{font-size:9px;max-width:160px;}
+  .wp{font-size:13px;}
+  .wch{font-size:11px;}
+
+  /* ── Chart panel mobile ── */
+  .dhdr{
+    flex-direction:column;gap:8px;
+    padding:10px 12px 8px;
+  }
+  .dhr{align-items:flex-start;width:100%;}
+  .mgrid{
+    grid-template-columns:repeat(3,1fr);
+    gap:4px 10px;
+    width:100%;
+    text-align:left;
+  }
+  .mk{font-size:8px;}
+  .mv{font-size:11px;}
+  .dsym{font-size:20px;}
+  .dprice{font-size:28px;}
+  .dchg{font-size:11px;gap:6px;}
+
+  /* Analysis tabs — scroll horizontally */
+  .atabs{overflow-x:auto;}
+  .atabs::-webkit-scrollbar{display:none;}
+  .atab{min-width:80px;font-size:8px;padding:6px 4px;}
+
+  /* Timeframe bar — scroll */
+  .tfb{padding:4px 8px;gap:4px;overflow-x:auto;}
+  .tfb::-webkit-scrollbar{display:none;}
+  .tfg{overflow-x:auto;}
+  .tfg::-webkit-scrollbar{display:none;}
+  .tf-divider{display:none;}
+  .tfgrp{border-right:none;padding-right:2px;margin-right:1px;}
+  .tfbtn{padding:3px 7px;font-size:10px;}
+  .chart-live{display:none;}
+  .rfbtn span{display:none;}
+  .rfbtn{padding:3px 8px;}
+
+  /* Chart canvas — give it room */
+  .cw{padding:6px 8px;}
+
+  /* Chart OHLC info — smaller */
+  .chart-info{font-size:9px;gap:8px;flex-wrap:wrap;}
+  .ci-label{display:none;}
+
+  /* ── AI panel mobile ── */
+  .modes{grid-template-columns:1fr 1fr;gap:3px;padding:5px;}
+  .mbtn{font-size:8px;padding:5px 5px;}
+  .secm{margin:5px 6px;padding:7px;}
+  .smrow{gap:5px;margin-bottom:3px;}
+  .sml{font-size:8px;width:50px;}
+  .smv{font-size:8px;width:28px;}
+  .runbtn{margin:5px 6px;padding:8px;font-size:10px;}
+  .feed{padding:0 6px 6px;}
+  .card{margin-bottom:6px;}
+  .cinn{padding:8px 8px 8px 12px;}
+  .ctitle{font-size:11px;}
+  .cbody{font-size:10px;}
+  .ainp{padding:6px;}
+  .aiq{font-size:11px;padding:8px 8px;}
+  .asnd{padding:0 12px;font-size:11px;}
+
+  /* ── Status bar — slimmer ── */
+  .sbar2{height:18px;padding:0 10px;font-size:8px;}
+  .sbr{gap:8px;}
+  #sbTF,#sbup{display:none;}
+
+  /* ── Modal ── */
+  .modal{width:95vw;max-width:95vw;}
+  .mbody{padding:12px;}
+  .mf{margin-bottom:10px;}
+}
+
+/* ── Very small phones (≤380px) ── */
+@media(max-width:380px){
+  .ntab{padding:7px 8px;font-size:9px;}
+  .dprice{font-size:24px;}
+  .mgrid{grid-template-columns:1fr 1fr;}
+}
+
 </style>
 </head>
 <body>
@@ -445,7 +625,80 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+// ── MOBILE TAB SWITCHER ──────────────────────────────────────────────
+(function(){
+  const isMobile=()=>window.innerWidth<=768;
+
+  function applyMobileLayout(){
+    const bar=document.getElementById('mobTabbar');
+    if(!bar)return;
+    if(isMobile()){
+      bar.style.display='flex';
+      // Give panels position:absolute sizing context
+      const body=document.querySelector('.body');
+      if(body)body.style.position='relative';
+    } else {
+      bar.style.display='none';
+      // Restore desktop layout
+      ['wlp','cp','aip'].forEach(cls=>{
+        const el=document.querySelector('.'+cls);
+        if(el){el.classList.remove('mob-active');el.style.opacity='';}
+      });
+      const wlp=document.querySelector('.wlp');
+      const cp=document.querySelector('.cp');
+      const aip=document.querySelector('.aip');
+      if(wlp)wlp.style.opacity='1';
+      if(cp)cp.style.opacity='1';
+      if(aip)aip.style.opacity='1';
+    }
+  }
+
+  window.mobTab=function(tab){
+    if(!isMobile())return;
+    const map={wl:'wlp',chart:'cp',ai:'aip'};
+    // Show target panel, hide others
+    Object.values(map).forEach(cls=>{
+      const el=document.querySelector('.'+cls);
+      if(el)el.classList.remove('mob-active');
+    });
+    const target=document.querySelector('.'+map[tab]);
+    if(target)target.classList.add('mob-active');
+    // Update tab active state
+    ['wl','chart','ai'].forEach(t=>{
+      const btn=document.getElementById('mob-'+t);
+      if(btn)btn.classList.toggle('on',t===tab);
+    });
+    // If switching to chart and we have an active ticker, ensure chart renders
+    if(tab==='chart'&&actSym){
+      setTimeout(()=>{if(chart)chart.resize();},50);
+    }
+  };
+
+  // Init
+  applyMobileLayout();
+  if(isMobile())mobTab('wl');
+
+  // Re-check on resize (e.g. rotation)
+  window.addEventListener('resize',()=>{
+    applyMobileLayout();
+    if(isMobile()){
+      // Stay on current active tab
+      const active=document.querySelector('.mob-tab.on');
+      const tabId=active?active.id.replace('mob-',''):'wl';
+      mobTab(tabId);
+    }
+  });
+
+  // When a watchlist ticker is selected on mobile, auto-switch to chart view
+  const origSel=window.sel;
+  window.sel=function(sym){
+    origSel(sym);
+    if(isMobile())setTimeout(()=>mobTab('chart'),80);
+  };
+})();
+
+</script>
 <script>
 // SECURITY: API keys live in memory only — never persisted to disk.
 // Keys clear when the tab closes. Watchlist (non-sensitive) still persists.
@@ -871,5 +1124,29 @@ setTimeout(()=>{
 // Periodic full data refresh (separate from chart live ticks)
 setInterval(refreshAll,30000);
 </script>
+
+<!-- ── MOBILE BOTTOM TAB BAR (hidden on desktop via CSS) ── -->
+<div class="mob-tabbar" id="mobTabbar" style="display:none;">
+  <button class="mob-tab on" id="mob-wl" onclick="mobTab('wl')">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <path d="M3 5h14M3 10h14M3 15h8"/>
+    </svg>
+    Watchlist
+  </button>
+  <button class="mob-tab" id="mob-chart" onclick="mobTab('chart')">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <polyline points="2,16 7,10 11,13 16,6 18,8"/>
+    </svg>
+    Chart
+  </button>
+  <button class="mob-tab" id="mob-ai" onclick="mobTab('ai')">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <circle cx="10" cy="10" r="7"/>
+      <path d="M10 7v4M10 14h.01"/>
+    </svg>
+    AI Intel
+  </button>
+</div>
+
 </body>
 </html>
