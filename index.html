@@ -276,76 +276,74 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 /* ── Phone (≤768px) ── */
 @media(max-width:768px){
-  /* Kill the 3-col desktop grid entirely */
   html,body{height:100%;overflow:hidden;}
   body{font-size:11px;}
 
-  /* ── Header ── */
+  /* Header — strip down */
   .hdr{padding:0 12px;height:44px;}
-  .hdr-c{gap:8px;}
   .hdr-c .mpill{display:none;}
   .hdr-c .dt{display:none;}
   .clk{font-size:12px;}
   .mbadge{display:none;}
 
-  /* ── Nav tabs — horizontal scroll ── */
+  /* Nav tabs — horizontal scroll */
   .navtabs{padding:0 8px;overflow-x:auto;gap:0;}
   .navtabs::-webkit-scrollbar{display:none;}
   .ntab{padding:7px 12px;font-size:10px;letter-spacing:.07em;white-space:nowrap;}
 
-  /* ── Ticker tape — faster on small screen ── */
+  /* Ticker tape */
   .tape{height:22px;}
   .tape-i{animation-duration:30s;}
   .ti{padding:0 12px;font-size:10px;gap:6px;}
 
-  /* ── MOBILE TAB SYSTEM ── */
-  /* Hide ALL panels by default — JS controls .mob-active */
+  /* ── CORE MOBILE LAYOUT ──
+     Body becomes a single-slot container.
+     Panels are hidden by default; .mob-active shows the active one.
+     Using display:none / display:flex so hidden panels take NO space
+     and no height:0 / opacity tricks that break chart sizing. */
   .body{
-    display:flex;
-    flex-direction:column;
+    display:block;
+    position:relative;
     flex:1;
     overflow:hidden;
-    position:relative;
   }
   .wlp,.cp,.aip{
+    display:none;
     position:absolute;
-    inset:0;
-    display:flex;
+    top:0;left:0;right:0;bottom:0;
     flex-direction:column;
     overflow:hidden;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .2s;
   }
-  .wlp.mob-active,.cp.mob-active,.aip.mob-active{
-    opacity:1;
-    pointer-events:all;
+  .wlp.mob-active,
+  .cp.mob-active,
+  .aip.mob-active{
+    display:flex;
   }
-  /* Remove desktop borders between panels */
   .wlp{border-right:none;}
   .aip{border-left:none;}
 
-  /* ── Mobile bottom tab bar ── */
+  /* ── Bottom tab bar ── */
   .mob-tabbar{
     display:flex;
     background:var(--panel);
     border-top:1px solid var(--b2);
     flex-shrink:0;
     z-index:50;
+    position:relative;
   }
   .mob-tab{
     flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    padding:8px 4px 6px;gap:3px;
+    padding:8px 4px 7px;gap:3px;
     cursor:pointer;transition:all .2s;
     border:none;background:none;
     font-family:var(--fm);font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
     color:var(--tm);border-top:2px solid transparent;
+    -webkit-tap-highlight-color:transparent;
   }
-  .mob-tab.on{color:var(--cy);border-top-color:var(--cy);}
-  .mob-tab svg{width:18px;height:18px;}
+  .mob-tab.on{color:var(--cy);border-top-color:var(--cy);background:var(--cg);}
+  .mob-tab svg{flex-shrink:0;}
 
-  /* ── Watchlist panel mobile ── */
-  .wlp .ph{padding:8px 12px;}
+  /* ── Watchlist panel ── */
   .wll{overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .wli{padding:10px 12px;}
   .wsym{font-size:15px;}
@@ -353,51 +351,41 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   .wp{font-size:13px;}
   .wch{font-size:11px;}
 
-  /* ── Chart panel mobile ── */
-  .dhdr{
-    flex-direction:column;gap:8px;
-    padding:10px 12px 8px;
-  }
+  /* ── Chart panel ── */
+  .dhdr{flex-direction:column;gap:8px;padding:10px 12px 8px;}
   .dhr{align-items:flex-start;width:100%;}
-  .mgrid{
-    grid-template-columns:repeat(3,1fr);
-    gap:4px 10px;
-    width:100%;
-    text-align:left;
-  }
+  .mgrid{grid-template-columns:repeat(3,1fr);gap:4px 10px;width:100%;text-align:left;}
   .mk{font-size:8px;}
   .mv{font-size:11px;}
   .dsym{font-size:20px;}
   .dprice{font-size:28px;}
   .dchg{font-size:11px;gap:6px;}
 
-  /* Analysis tabs — scroll horizontally */
+  /* Analysis tabs */
   .atabs{overflow-x:auto;}
   .atabs::-webkit-scrollbar{display:none;}
-  .atab{min-width:80px;font-size:8px;padding:6px 4px;}
+  .atab{min-width:72px;font-size:8px;padding:6px 3px;}
 
   /* Timeframe bar — scroll */
-  .tfb{padding:4px 8px;gap:4px;overflow-x:auto;}
-  .tfb::-webkit-scrollbar{display:none;}
-  .tfg{overflow-x:auto;}
+  .tfb{padding:4px 8px;gap:4px;}
+  .tfg{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .tfg::-webkit-scrollbar{display:none;}
   .tf-divider{display:none;}
   .tfgrp{border-right:none;padding-right:2px;margin-right:1px;}
-  .tfbtn{padding:3px 7px;font-size:10px;}
+  .tfbtn{padding:3px 8px;font-size:10px;}
   .chart-live{display:none;}
+  .rfbtn svg{display:inline;}
   .rfbtn span{display:none;}
   .rfbtn{padding:3px 8px;}
 
-  /* Chart canvas — give it room */
-  .cw{padding:6px 8px;}
-
-  /* Chart OHLC info — smaller */
+  /* Chart canvas */
+  .cw{padding:6px 8px;min-height:0;}
   .chart-info{font-size:9px;gap:8px;flex-wrap:wrap;}
   .ci-label{display:none;}
 
-  /* ── AI panel mobile ── */
+  /* ── AI panel ── */
   .modes{grid-template-columns:1fr 1fr;gap:3px;padding:5px;}
-  .mbtn{font-size:8px;padding:5px 5px;}
+  .mbtn{font-size:8px;padding:5px;}
   .secm{margin:5px 6px;padding:7px;}
   .smrow{gap:5px;margin-bottom:3px;}
   .sml{font-size:8px;width:50px;}
@@ -409,15 +397,14 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   .ctitle{font-size:11px;}
   .cbody{font-size:10px;}
   .ainp{padding:6px;}
-  .aiq{font-size:11px;padding:8px 8px;}
+  .aiq{font-size:11px;padding:8px;}
   .asnd{padding:0 12px;font-size:11px;}
 
-  /* ── Status bar — slimmer ── */
+  /* Status bar */
   .sbar2{height:18px;padding:0 10px;font-size:8px;}
-  .sbr{gap:8px;}
-  #sbTF,#sbup{display:none;}
+  .sbr span:not(:first-child){display:none;}
 
-  /* ── Modal ── */
+  /* Modal */
   .modal{width:95vw;max-width:95vw;}
   .mbody{padding:12px;}
   .mf{margin-bottom:10px;}
@@ -625,80 +612,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
-// ── MOBILE TAB SWITCHER ──────────────────────────────────────────────
-(function(){
-  const isMobile=()=>window.innerWidth<=768;
-
-  function applyMobileLayout(){
-    const bar=document.getElementById('mobTabbar');
-    if(!bar)return;
-    if(isMobile()){
-      bar.style.display='flex';
-      // Give panels position:absolute sizing context
-      const body=document.querySelector('.body');
-      if(body)body.style.position='relative';
-    } else {
-      bar.style.display='none';
-      // Restore desktop layout
-      ['wlp','cp','aip'].forEach(cls=>{
-        const el=document.querySelector('.'+cls);
-        if(el){el.classList.remove('mob-active');el.style.opacity='';}
-      });
-      const wlp=document.querySelector('.wlp');
-      const cp=document.querySelector('.cp');
-      const aip=document.querySelector('.aip');
-      if(wlp)wlp.style.opacity='1';
-      if(cp)cp.style.opacity='1';
-      if(aip)aip.style.opacity='1';
-    }
-  }
-
-  window.mobTab=function(tab){
-    if(!isMobile())return;
-    const map={wl:'wlp',chart:'cp',ai:'aip'};
-    // Show target panel, hide others
-    Object.values(map).forEach(cls=>{
-      const el=document.querySelector('.'+cls);
-      if(el)el.classList.remove('mob-active');
-    });
-    const target=document.querySelector('.'+map[tab]);
-    if(target)target.classList.add('mob-active');
-    // Update tab active state
-    ['wl','chart','ai'].forEach(t=>{
-      const btn=document.getElementById('mob-'+t);
-      if(btn)btn.classList.toggle('on',t===tab);
-    });
-    // If switching to chart and we have an active ticker, ensure chart renders
-    if(tab==='chart'&&actSym){
-      setTimeout(()=>{if(chart)chart.resize();},50);
-    }
-  };
-
-  // Init
-  applyMobileLayout();
-  if(isMobile())mobTab('wl');
-
-  // Re-check on resize (e.g. rotation)
-  window.addEventListener('resize',()=>{
-    applyMobileLayout();
-    if(isMobile()){
-      // Stay on current active tab
-      const active=document.querySelector('.mob-tab.on');
-      const tabId=active?active.id.replace('mob-',''):'wl';
-      mobTab(tabId);
-    }
-  });
-
-  // When a watchlist ticker is selected on mobile, auto-switch to chart view
-  const origSel=window.sel;
-  window.sel=function(sym){
-    origSel(sym);
-    if(isMobile())setTimeout(()=>mobTab('chart'),80);
-  };
-})();
-
-</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 // SECURITY: API keys live in memory only — never persisted to disk.
 // Keys clear when the tab closes. Watchlist (non-sensitive) still persists.
@@ -1123,30 +1037,88 @@ setTimeout(()=>{
 
 // Periodic full data refresh (separate from chart live ticks)
 setInterval(refreshAll,30000);
+
+
+// ══ MOBILE TAB SYSTEM ═══════════════════════════════════════════════
+// Runs after all functions are defined — safe to wrap sel()
+(function initMobile(){
+  function isMob(){return window.innerWidth<=768;}
+
+  function showTab(tab){
+    if(!isMob())return;
+    var panels={wl:'.wlp',chart:'.cp',ai:'.aip'};
+    // Hide all panels
+    Object.values(panels).forEach(function(sel){
+      var el=document.querySelector(sel);
+      if(el){el.classList.remove('mob-active');}
+    });
+    // Show target
+    var el=document.querySelector(panels[tab]);
+    if(el)el.classList.add('mob-active');
+    // Update tab buttons
+    ['wl','chart','ai'].forEach(function(t){
+      var btn=document.getElementById('mob-'+t);
+      if(btn)btn.classList.toggle('on',t===tab);
+    });
+    // Force chart resize when switching to chart tab
+    if(tab==='chart'&&chart){
+      setTimeout(function(){
+        try{chart.resize();}catch(e){}
+      },60);
+    }
+  }
+
+  // Expose globally for onclick handlers
+  window.mobTab=showTab;
+
+  function applyLayout(){
+    var bar=document.getElementById('mobTabbar');
+    if(!bar)return;
+    if(isMob()){
+      bar.style.display='flex';
+      // On first mobile activation, show watchlist
+      if(!document.querySelector('.mob-active')){
+        showTab('wl');
+      }
+    } else {
+      bar.style.display='none';
+      // Remove mobile-active so desktop grid takes over
+      document.querySelectorAll('.mob-active').forEach(function(el){
+        el.classList.remove('mob-active');
+      });
+    }
+  }
+
+  // Patch sel() so tapping a ticker auto-jumps to chart on mobile
+  var _origSel=window.sel;
+  if(typeof _origSel==='function'){
+    window.sel=function(sym){
+      _origSel(sym);
+      if(isMob())setTimeout(function(){showTab('chart');},80);
+    };
+  }
+
+  applyLayout();
+  window.addEventListener('resize',applyLayout);
+})();
+
 </script>
 
-<!-- ── MOBILE BOTTOM TAB BAR (hidden on desktop via CSS) ── -->
-<div class="mob-tabbar" id="mobTabbar" style="display:none;">
-  <button class="mob-tab on" id="mob-wl" onclick="mobTab('wl')">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-      <path d="M3 5h14M3 10h14M3 15h8"/>
-    </svg>
+
+<!-- MOBILE BOTTOM TAB BAR -->
+<div class="mob-tabbar" id="mobTabbar">
+  <button class="mob-tab" id="mob-wl" onclick="mobTab('wl')">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="11" y2="15"/></svg>
     Watchlist
   </button>
   <button class="mob-tab" id="mob-chart" onclick="mobTab('chart')">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-      <polyline points="2,16 7,10 11,13 16,6 18,8"/>
-    </svg>
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,15 7,9 11,12 16,5"/><line x1="16" y1="5" x2="19" y2="5"/><line x1="16" y1="5" x2="16" y2="8"/></svg>
     Chart
   </button>
   <button class="mob-tab" id="mob-ai" onclick="mobTab('ai')">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-      <circle cx="10" cy="10" r="7"/>
-      <path d="M10 7v4M10 14h.01"/>
-    </svg>
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><line x1="10" y1="7" x2="10" y2="10"/><circle cx="10" cy="13" r="0.5" fill="currentColor"/></svg>
     AI Intel
   </button>
 </div>
-
 </body>
 </html>
