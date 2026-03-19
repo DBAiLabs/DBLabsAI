@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://api.anthropic.com https://newsapi.org https://cdn.jsdelivr.net;">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBLabs.AI — World Intel Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#050810;--panel:#080d16;--panel2:#0d1520;--panel3:#111c2a;
+  --b1:rgba(0,212,255,.07);--b2:rgba(0,212,255,.14);--b3:rgba(0,212,255,.28);
+  --cy:#00d4ff;--cd:rgba(0,212,255,.1);--cg:rgba(0,212,255,.05);
+  --gr:#00ff88;--gd:rgba(0,255,136,.1);
+  --re:#ff3b5c;--rd:rgba(255,59,92,.1);
+  --am:#ffaa00;--ad:rgba(255,170,0,.1);
+  --pu:#8b5cf6;--pd:rgba(139,92,246,.12);
+  --tx:#c8d8e8;--ts:#5a7a95;--tm:#253545;
+  --fm:'JetBrains Mono',monospace;--fu:'Barlow Condensed',sans-serif;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--tx);font-family:var(--fm);font-size:12px;display:flex;flex-direction:column;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.02) 2px,rgba(0,0,0,.02) 4px);pointer-events:none;z-index:9999;}
+
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:42px;background:var(--panel);border-bottom:1px solid var(--b2);flex-shrink:0;position:relative;z-index:100;}
+.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cy) 30%,var(--cy) 70%,transparent);opacity:.2;}
+.logo{font-family:var(--fu);font-size:17px;font-weight:700;letter-spacing:.14em;color:var(--cy);display:flex;align-items:center;gap:10px;}
+.lp{width:7px;height:7px;background:var(--gr);border-radius:50%;box-shadow:0 0 6px var(--gr);animation:gp 2s ease-in-out infinite;}
+@keyframes gp{0%,100%{opacity:1;box-shadow:0 0 6px var(--gr)}50%{opacity:.4;box-shadow:0 0 14px var(--gr)}}
+.hdr-c{display:flex;align-items:center;gap:14px;}
+.pill{display:flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid;font-size:10px;font-weight:600;letter-spacing:.1em;}
+.pill.g{color:var(--gr);border-color:rgba(0,255,136,.2);}
+.pill.a{color:var(--am);border-color:rgba(255,170,0,.2);}
+.pill.r{color:var(--re);border-color:rgba(255,59,92,.2);animation:rb 1.5s ease-in-out infinite;}
+@keyframes rb{0%,100%{opacity:1}50%{opacity:.5}}
+.pd{width:5px;height:5px;border-radius:50%;animation:gp 2s ease-in-out infinite;}
+.clk{font-size:13px;font-weight:500;color:var(--ts);}
+.hdr-r{display:flex;align-items:center;gap:8px;}
+.mbg{font-size:10px;font-weight:600;letter-spacing:.1em;padding:3px 9px;border:1px solid;}
+.mbg.demo{color:var(--am);border-color:rgba(255,170,0,.25);}
+.mbg.live{color:var(--gr);border-color:rgba(0,255,136,.25);}
+.hbtn{background:none;border:1px solid var(--b2);color:var(--ts);padding:4px 11px;cursor:pointer;font-family:var(--fm);font-size:10px;font-weight:500;letter-spacing:.07em;transition:all .2s;display:flex;align-items:center;gap:5px;}
+.hbtn:hover{border-color:var(--cy);color:var(--cy);background:var(--cd);}
+
+/* ── NAV ── */
+.nav{display:flex;background:var(--panel2);border-bottom:1px solid var(--b2);flex-shrink:0;padding:0 16px;gap:2px;z-index:100;}
+.ntab{font-family:var(--fu);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--tm);padding:8px 18px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:6px;text-decoration:none;}
+.ntab:hover{color:var(--ts);}
+.ntab.on{color:var(--cy);border-bottom-color:var(--cy);}
+.ntd{width:6px;height:6px;border-radius:50%;}
+
+/* ── BODY ── */
+.body{display:grid;grid-template-columns:1fr 316px;flex:1;overflow:hidden;}
+
+/* ── MAP AREA ── */
+.map-area{position:relative;overflow:hidden;background:var(--bg);}
+
+/* Corner frame */
+.corner{position:absolute;width:28px;height:28px;border-color:var(--cy);border-style:solid;opacity:.3;pointer-events:none;z-index:10;}
+.c-tl{top:10px;left:10px;border-width:1px 0 0 1px;}
+.c-tr{top:10px;right:10px;border-width:1px 1px 0 0;}
+.c-bl{bottom:10px;left:10px;border-width:0 0 1px 1px;}
+.c-br{bottom:10px;right:10px;border-width:0 1px 1px 0;}
+
+/* Scanline */
+.scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.12),transparent);animation:sc 9s linear infinite;pointer-events:none;z-index:8;}
+@keyframes sc{0%{top:0;opacity:0}5%{opacity:1}95%{opacity:1}100%{top:100%;opacity:0}}
+
+/* Coords */
+.coords{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(5,8,16,.85);border:1px solid var(--b2);padding:3px 14px;font-size:10px;color:var(--ts);letter-spacing:.1em;pointer-events:none;z-index:10;}
+
+/* Risk legend */
+.legend{position:absolute;top:10px;right:10px;z-index:10;background:rgba(5,8,16,.88);border:1px solid var(--b2);padding:10px 12px;}
+.leg-t{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--tm);margin-bottom:8px;}
+.leg-r{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:10px;color:var(--ts);}
+.leg-d{width:8px;height:8px;border-radius:50%;}
+
+/* SVG Map */
+#worldSvg{width:100%;height:100%;cursor:crosshair;}
+#worldSvg path{transition:fill .2s,stroke .2s,opacity .2s;}
+#worldSvg path:hover{opacity:.9;cursor:pointer;}
+
+/* Map info overlay */
+.map-info{position:absolute;top:10px;left:10px;z-index:10;pointer-events:none;}
+.mi-row{font-size:9px;color:var(--tm);margin-bottom:3px;letter-spacing:.07em;}
+
+/* ── COUNTRY PANEL ── */
+.cpanel{
+  position:absolute;bottom:0;left:0;right:0;
+  background:rgba(5,8,16,.97);border-top:1px solid var(--b2);
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+  z-index:20;max-height:58%;display:flex;flex-direction:column;
+}
+.cpanel.open{transform:translateY(0);}
+.cp-h{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--b1);flex-shrink:0;background:rgba(5,8,16,.99);}
+.cp-fl{font-size:22px;margin-right:10px;}
+.cp-nm{font-family:var(--fu);font-size:18px;font-weight:700;letter-spacing:.08em;color:var(--tx);}
+.cp-sb{font-size:10px;color:var(--ts);}
+.cp-x{background:none;border:1px solid var(--b2);color:var(--ts);width:24px;height:24px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.cp-x:hover{border-color:var(--re);color:var(--re);}
+.cp-meta{display:flex;border-bottom:1px solid var(--b1);flex-shrink:0;}
+.cp-mi{flex:1;padding:7px 14px;border-right:1px solid var(--b1);text-align:center;}
+.cp-mi:last-child{border-right:none;}
+.cpk{font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tm);margin-bottom:3px;}
+.cpv{font-size:12px;font-weight:500;color:var(--ts);}
+.cp-body{overflow-y:auto;flex:1;padding:12px 16px;}
+.cp-body::-webkit-scrollbar{width:2px;}
+.cp-body::-webkit-scrollbar-thumb{background:var(--b2);}
+.cp-nt{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--tm);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.cp-nt::after{content:'';flex:1;height:1px;background:var(--b1);}
+.ni{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--b1);cursor:pointer;transition:all .2s;}
+.ni:last-child{border-bottom:none;}
+.ni:hover{padding-left:6px;}
+.ni:hover .ni-t{color:var(--cy);}
+.ni-cat{flex-shrink:0;font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;height:fit-content;margin-top:2px;}
+.ni-cat.politics{color:var(--re);background:var(--rd);border:1px solid rgba(255,59,92,.2);}
+.ni-cat.economy{color:var(--gr);background:var(--gd);border:1px solid rgba(0,255,136,.2);}
+.ni-cat.tech{color:var(--cy);background:var(--cd);border:1px solid rgba(0,212,255,.2);}
+.ni-cat.energy{color:var(--am);background:var(--ad);border:1px solid rgba(255,170,0,.2);}
+.ni-cat.defence{color:var(--pu);background:var(--pd);border:1px solid rgba(139,92,246,.2);}
+.ni-cat.markets{color:var(--gr);background:var(--gd);border:1px solid rgba(0,255,136,.2);}
+.ni-t{font-size:12px;font-weight:500;color:var(--tx);line-height:1.4;margin-bottom:3px;transition:color .2s;}
+.ni-m{font-size:10px;color:var(--tm);}
+.ni-load{font-size:11px;color:var(--ts);padding:16px 0;text-align:center;}
+
+/* Hover tooltip */
+.map-tip{
+  position:absolute;z-index:30;pointer-events:none;
+  background:rgba(8,13,22,.97);border:1px solid var(--b3);
+  padding:8px 12px;white-space:nowrap;
+  transition:opacity .15s;opacity:0;
+}
+.map-tip.show{opacity:1;}
+.mt-name{font-family:var(--fu);font-size:14px;font-weight:700;letter-spacing:.07em;color:var(--tx);margin-bottom:3px;}
+.mt-sub{font-size:10px;color:var(--ts);}
+.mt-risk{font-size:9px;font-weight:700;letter-spacing:.1em;margin-top:5px;}
+
+/* ── RIGHT PANEL ── */
+.rp{background:var(--panel);border-left:1px solid var(--b2);display:flex;flex-direction:column;overflow:hidden;}
+.rph{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--b1);flex-shrink:0;}
+.rpt{font-family:var(--fu);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--cy);}
+.live-ind{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--re);}
+.live-d{width:5px;height:5px;background:var(--re);border-radius:50%;animation:gp 1s ease-in-out infinite;}
+
+/* Breaking ticker */
+.ticker{height:24px;background:rgba(255,59,92,.07);border-bottom:1px solid rgba(255,59,92,.2);display:flex;align-items:center;overflow:hidden;flex-shrink:0;}
+.tk-lbl{flex-shrink:0;background:var(--re);color:#fff;font-size:9px;font-weight:700;letter-spacing:.1em;padding:0 8px;height:100%;display:flex;align-items:center;}
+.tk-inner{display:flex;animation:tks 35s linear infinite;white-space:nowrap;}
+@keyframes tks{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tk-item{font-size:10px;color:var(--tx);padding:0 18px;border-right:1px solid rgba(255,59,92,.18);}
+
+/* Category filter */
+.cats{display:flex;padding:6px;border-bottom:1px solid var(--b1);flex-shrink:0;gap:0;overflow-x:auto;}
+.cats::-webkit-scrollbar{display:none;}
+.cbtn{background:none;border:1px solid var(--b1);color:var(--tm);font-family:var(--fm);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;cursor:pointer;transition:all .2s;white-space:nowrap;margin-right:-1px;}
+.cbtn:hover{background:var(--cd);color:var(--cy);border-color:var(--cy);}
+.cbtn.on{background:var(--cd);color:var(--cy);border-color:var(--b3);}
+
+/* Refresh */
+.rfbtn{margin:6px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--cd);border:1px solid var(--b3);color:var(--cy);font-family:var(--fm);font-size:10px;padding:7px;cursor:pointer;transition:all .25s;flex-shrink:0;}
+.rfbtn:hover{background:rgba(0,212,255,.18);}
+.rfbtn.sp svg{animation:rsp .8s linear infinite;}
+@keyframes rsp{to{transform:rotate(360deg)}}
+
+/* Feed */
+.feed{overflow-y:auto;flex:1;}
+.feed::-webkit-scrollbar{width:2px;}
+.feed::-webkit-scrollbar-thumb{background:var(--b2);}
+.fsec{padding:5px 10px 4px;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--tm);background:var(--panel2);border-bottom:1px solid var(--b1);position:sticky;top:0;z-index:1;}
+.fitem{padding:10px 12px;border-bottom:1px solid var(--b1);cursor:pointer;transition:all .2s;}
+.fitem:hover{background:var(--cg);padding-left:16px;}
+.fitem:hover .fit{color:var(--cy);}
+.fi-top{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.fc{font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;}
+.fc.politics{color:var(--re);background:var(--rd);border:1px solid rgba(255,59,92,.2);}
+.fc.economy{color:var(--gr);background:var(--gd);border:1px solid rgba(0,255,136,.2);}
+.fc.tech{color:var(--cy);background:var(--cd);border:1px solid rgba(0,212,255,.2);}
+.fc.energy{color:var(--am);background:var(--ad);border:1px solid rgba(255,170,0,.2);}
+.fc.defence{color:var(--pu);background:var(--pd);border:1px solid rgba(139,92,246,.2);}
+.fc.markets{color:var(--gr);background:var(--gd);border:1px solid rgba(0,255,136,.2);}
+.fco{font-size:9px;color:var(--tm);margin-left:auto;}
+.fit{font-size:11px;font-weight:500;color:var(--tx);line-height:1.4;margin-bottom:3px;transition:color .2s;}
+.fmeta{font-size:9px;color:var(--tm);display:flex;gap:10px;}
+.fimp{font-size:9px;font-weight:700;}
+.fimp.h{color:var(--re);}
+.fimp.m{color:var(--am);}
+.fimp.l{color:var(--gr);}
+
+/* STATUS */
+.sb{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:21px;background:var(--panel);border-top:1px solid var(--b1);flex-shrink:0;font-size:9px;color:var(--tm);z-index:100;}
+.sbl,.sbr{display:flex;align-items:center;gap:14px;}
+.sbd{width:4px;height:4px;border-radius:50%;}
+
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2000;align-items:center;justify-content:center;}
+.ov.on{display:flex;}
+.modal{background:var(--panel);border:1px solid var(--b3);width:470px;max-width:92vw;}
+.mhdr{padding:13px 18px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;}
+.mttl{font-family:var(--fu);font-size:15px;font-weight:700;letter-spacing:.12em;color:var(--cy);}
+.mx{background:none;border:none;color:var(--ts);cursor:pointer;font-size:16px;}
+.mbody{padding:16px;}
+.mf{margin-bottom:13px;}
+.mlbl{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ts);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;}
+.mlbl a{color:var(--cy);text-decoration:none;font-size:9px;}
+.minp{width:100%;background:var(--panel3);border:1px solid var(--b2);color:var(--tx);font-family:var(--fm);font-size:11px;padding:7px 10px;outline:none;transition:border-color .2s;}
+.minp:focus{border-color:var(--cy);}
+.mhnt{font-size:9px;color:var(--tm);margin-top:4px;line-height:1.5;}
+.mftr{padding:11px 18px;border-top:1px solid var(--b1);display:flex;gap:7px;justify-content:flex-end;}
+.mbtn{background:none;border:1px solid var(--b2);color:var(--ts);font-family:var(--fm);font-size:10px;padding:7px 17px;cursor:pointer;transition:all .2s;}
+.mbtn:hover{border-color:var(--b3);color:var(--tx);}
+.mbtn.p{background:var(--cd);border-color:var(--b3);color:var(--cy);}
+.mbtn.p:hover{background:var(--cy);color:var(--bg);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo"><div class="lp"></div>DBLabs.AI</div>
+  <div class="hdr-c">
+    <div class="pill g"><div class="pd" style="background:var(--gr)"></div>INTEL FEED LIVE</div>
+    <div class="pill a"><div class="pd" style="background:var(--am)"></div>3 ACTIVE EVENTS</div>
+    <div class="pill r"><div class="pd" style="background:var(--re)"></div>MARKET IMPACT ALERT</div>
+    <div class="clk" id="clk">--:--:--</div>
+  </div>
+  <div class="hdr-r">
+    <div class="mbg demo" id="mbadge">⚡ DEMO</div>
+    <button class="hbtn" onclick="refreshNews()">
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10.5 6A4.5 4.5 0 1 1 6 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M6 1.5L8.5 3.5M6 1.5L8.5 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      REFRESH
+    </button>
+    <button class="hbtn" onclick="openM()">⚙ SETTINGS</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a href="DBAI.html" class="ntab"><div class="ntd" style="background:var(--cy)"></div>Stock Terminal</a>
+  <div class="ntab on"><div class="ntd" style="background:var(--gr)"></div>World Intel Map</div>
+  <div class="ntab" style="opacity:.35;cursor:not-allowed;"><div class="ntd" style="background:var(--am)"></div>Dashboard (Coming Soon)</div>
+</div>
+
+<!-- BODY -->
+<div class="body">
+
+  <!-- MAP -->
+  <div class="map-area" id="mapArea">
+    <div class="corner c-tl"></div><div class="corner c-tr"></div>
+    <div class="corner c-bl"></div><div class="corner c-br"></div>
+    <div class="scan"></div>
+    <div class="coords" id="coords">LAT 0.000° · LON 0.000°</div>
+
+    <div class="map-info">
+      <div class="mi-row" id="mi-zoom">ZOOM: 1.0×</div>
+      <div class="mi-row" id="mi-sel">SELECTED: NONE</div>
+    </div>
+
+    <div class="legend">
+      <div class="leg-t">Market Risk Level</div>
+      <div class="leg-r"><div class="leg-d" style="background:var(--re)"></div>Critical — active event</div>
+      <div class="leg-r"><div class="leg-d" style="background:var(--am)"></div>Elevated — watch closely</div>
+      <div class="leg-r"><div class="leg-d" style="background:var(--gr)"></div>Normal — stable</div>
+      <div class="leg-r"><div class="leg-d" style="background:var(--cy)"></div>Selected country</div>
+    </div>
+
+    <!-- SVG World Map -->
+    <svg id="worldSvg" viewBox="0 0 2000 1001" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+
+    <!-- Hover tooltip -->
+    <div class="map-tip" id="mapTip">
+      <div class="mt-name" id="tipName">Country</div>
+      <div class="mt-sub" id="tipSub">GDP · Currency</div>
+      <div class="mt-risk" id="tipRisk">RISK: LOW</div>
+    </div>
+
+    <!-- Country intel panel -->
+    <div class="cpanel" id="cpanel">
+      <div class="cp-h">
+        <div style="display:flex;align-items:center;">
+          <div class="cp-fl" id="cpFlag">🌍</div>
+          <div>
+            <div class="cp-nm" id="cpName">—</div>
+            <div class="cp-sb" id="cpSub">Select a country on the map</div>
+          </div>
+        </div>
+        <button class="cp-x" onclick="closeCP()">✕</button>
+      </div>
+      <div class="cp-meta" id="cpMeta"></div>
+      <div class="cp-body" id="cpBody">
+        <div class="cp-nt">LATEST INTELLIGENCE</div>
+        <div class="ni-load">Click a country to load intelligence feed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="rp">
+    <div class="rph">
+      <div class="rpt">Global Broadcast</div>
+      <div class="live-ind"><div class="live-d"></div>LIVE</div>
+    </div>
+
+    <div class="ticker">
+      <div class="tk-lbl">⚡ BREAKING</div>
+      <div class="tk-inner" id="tkIn"></div>
+    </div>
+
+    <div class="cats">
+      <button class="cbtn on" onclick="fCat(this,'all')">ALL</button>
+      <button class="cbtn" onclick="fCat(this,'politics')">POLITICS</button>
+      <button class="cbtn" onclick="fCat(this,'economy')">ECONOMY</button>
+      <button class="cbtn" onclick="fCat(this,'markets')">MARKETS</button>
+      <button class="cbtn" onclick="fCat(this,'energy')">ENERGY</button>
+      <button class="cbtn" onclick="fCat(this,'tech')">TECH</button>
+      <button class="cbtn" onclick="fCat(this,'defence')">DEFENCE</button>
+    </div>
+
+    <button class="rfbtn" id="rfBtn" onclick="refreshNews()">
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10.5 6A4.5 4.5 0 1 1 6 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M6 1.5L8.5 3.5M6 1.5L8.5 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      REFRESH INTELLIGENCE FEED
+    </button>
+
+    <div class="feed" id="feed"></div>
+  </div>
+</div>
+
+<!-- STATUS -->
+<div class="sb">
+  <div class="sbl">
+    <span style="display:flex;align-items:center;gap:5px;"><div class="sbd" style="background:var(--gr)"></div>MAP ACTIVE</span>
+    <span id="sbmd" style="color:var(--am)">DEMO — ADD NEWSAPI KEY FOR LIVE INTELLIGENCE</span>
+  </div>
+  <div class="sbr">
+    <span id="sbev">3 high-impact events</span>
+    <span id="sbup">Updated: —</span>
+    <span>APEX v2.0 · MAP MODULE</span>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="ov" id="cfgOv">
+  <div class="modal">
+    <div class="mhdr"><div class="mttl">⚙ API CONFIGURATION</div><button class="mx" onclick="closeM()">✕</button></div>
+    <div class="mbody">
+      <div class="mf">
+        <div class="mlbl">NewsAPI Key (Live Global News)<a href="https://newsapi.org/register" target="_blank">Get free →</a></div>
+        <input class="minp" type="password" id="cNw" placeholder="Your NewsAPI key">
+        <div class="mhnt">Free tier: 100 req/day. Powers all country news and global broadcast feed.</div>
+      </div>
+      <div class="mf">
+        <div class="mlbl">Anthropic API Key (AI Country Analysis)<a href="https://console.anthropic.com" target="_blank">Get free →</a></div>
+        <input class="minp" type="password" id="cAn" placeholder="sk-ant-…">
+        <div class="mhnt">Enables AI-powered geopolitical analysis per country click.</div>
+      </div>
+    </div>
+    <div class="mftr">
+      <button class="mbtn" onclick="closeM()">CANCEL</button>
+      <button class="mbtn p" onclick="saveC()">SAVE & ACTIVATE</button>
+    </div>
+  </div>
+</div>
+
+<!-- D3 from CDN allowlist -->
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script>
+// SECURITY: API keys in memory only — never persisted to localStorage.
+const CFG={nw:'',an:''};
+function san(s){if(typeof s!=='string')return '';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+let activeFilt='all', selectedId=null;
+
+// ── CLOCK ─────────────────────────────────────────────────────────────
+function tick(){const n=new Date();document.getElementById('clk').textContent=n.toTimeString().slice(0,8);}
+setInterval(tick,1000);tick();
+
+// ── COUNTRY DATABASE ──────────────────────────────────────────────────
+const CD={
+  840:{name:'United States',flag:'🇺🇸',risk:'med',gdp:'$27.4T',cap:'$46.2T',cur:'USD',q:'US economy Federal Reserve Wall Street S&P 500'},
+  826:{name:'United Kingdom',flag:'🇬🇧',risk:'low',gdp:'$3.1T',cap:'$3.8T',cur:'GBP',q:'UK economy Bank of England FTSE 100'},
+  156:{name:'China',flag:'🇨🇳',risk:'hi',gdp:'$18.0T',cap:'$8.4T',cur:'CNY',q:'China economy PBOC trade tensions property'},
+  643:{name:'Russia',flag:'🇷🇺',risk:'hi',gdp:'$2.2T',cap:'$0.6T',cur:'RUB',q:'Russia war Ukraine sanctions energy'},
+  276:{name:'Germany',flag:'🇩🇪',risk:'low',gdp:'$4.5T',cap:'$2.3T',cur:'EUR',q:'Germany economy ECB eurozone recession DAX'},
+  392:{name:'Japan',flag:'🇯🇵',risk:'low',gdp:'$4.2T',cap:'$6.2T',cur:'JPY',q:'Japan Bank of Japan yen Nikkei rate hike'},
+  356:{name:'India',flag:'🇮🇳',risk:'low',gdp:'$3.7T',cap:'$4.2T',cur:'INR',q:'India economy RBI Sensex Modi manufacturing'},
+  250:{name:'France',flag:'🇫🇷',risk:'low',gdp:'$3.1T',cap:'$3.0T',cur:'EUR',q:'France economy CAC 40 ECB Macron'},
+  076:{name:'Brazil',flag:'🇧🇷',risk:'med',gdp:'$2.1T',cap:'$0.9T',cur:'BRL',q:'Brazil central bank Bovespa inflation Lula'},
+  682:{name:'Saudi Arabia',flag:'🇸🇦',risk:'med',gdp:'$1.1T',cap:'$2.5T',cur:'SAR',q:'Saudi Arabia OPEC oil Aramco Vision 2030'},
+  364:{name:'Iran',flag:'🇮🇷',risk:'hi',gdp:'$0.7T',cap:'$0.1T',cur:'IRR',q:'Iran nuclear sanctions oil geopolitics'},
+  376:{name:'Israel',flag:'🇮🇱',risk:'hi',gdp:'$0.5T',cap:'$0.2T',cur:'ILS',q:'Israel Gaza conflict ceasefire Middle East'},
+  410:{name:'South Korea',flag:'🇰🇷',risk:'low',gdp:'$1.7T',cap:'$1.9T',cur:'KRW',q:'South Korea KOSPI Samsung semiconductors chips'},
+  036:{name:'Australia',flag:'🇦🇺',risk:'low',gdp:'$1.7T',cap:'$1.8T',cur:'AUD',q:'Australia RBA ASX commodities mining'},
+  124:{name:'Canada',flag:'🇨🇦',risk:'low',gdp:'$2.1T',cap:'$3.0T',cur:'CAD',q:'Canada Bank of Canada TSX oil sands'},
+  484:{name:'Mexico',flag:'🇲🇽',risk:'med',gdp:'$1.3T',cap:'$0.5T',cur:'MXN',q:'Mexico Banxico nearshoring IPC Sheinbaum'},
+  528:{name:'Netherlands',flag:'🇳🇱',risk:'low',gdp:'$1.1T',cap:'$1.2T',cur:'EUR',q:'Netherlands ASML semiconductor AEX chips'},
+  158:{name:'Taiwan',flag:'🇹🇼',risk:'hi',gdp:'$0.8T',cap:'$2.1T',cur:'TWD',q:'Taiwan TSMC semiconductor China tensions strait'},
+  804:{name:'Ukraine',flag:'🇺🇦',risk:'hi',gdp:'$0.2T',cap:'$0.05T',cur:'UAH',q:'Ukraine war Russia reconstruction aid'},
+  792:{name:'Turkey',flag:'🇹🇷',risk:'med',gdp:'$1.1T',cap:'$0.3T',cur:'TRY',q:'Turkey inflation central bank lira BIST Erdogan'},
+  710:{name:'South Africa',flag:'🇿🇦',risk:'med',gdp:'$0.4T',cap:'$1.1T',cur:'ZAR',q:'South Africa JSE rand mining Ramaphosa'},
+  756:{name:'Switzerland',flag:'🇨🇭',risk:'low',gdp:'$0.9T',cap:'$1.8T',cur:'CHF',q:'Switzerland SNB UBS banking franc'},
+  360:{name:'Indonesia',flag:'🇮🇩',risk:'low',gdp:'$1.4T',cap:'$0.7T',cur:'IDR',q:'Indonesia Bank Indonesia IHSG commodities nickel'},
+  032:{name:'Argentina',flag:'🇦🇷',risk:'hi',gdp:'$0.6T',cap:'$0.1T',cur:'ARS',q:'Argentina inflation Milei peso IMF austerity'},
+  578:{name:'Norway',flag:'🇳🇴',risk:'low',gdp:'$0.5T',cap:'$0.3T',cur:'NOK',q:'Norway sovereign wealth fund oil Equinor energy'},
+  616:{name:'Poland',flag:'🇵🇱',risk:'low',gdp:'$0.8T',cap:'$0.2T',cur:'PLN',q:'Poland economy NATO defence EU WIG'},
+  724:{name:'Spain',flag:'🇪🇸',risk:'low',gdp:'$1.6T',cap:'$0.9T',cur:'EUR',q:'Spain economy IBEX tourism ECB Sanchez'},
+  380:{name:'Italy',flag:'🇮🇹',risk:'med',gdp:'$2.3T',cap:'$0.8T',cur:'EUR',q:'Italy economy FTSE MIB debt ECB Meloni'},
+  076:{name:'Brazil',flag:'🇧🇷',risk:'med',gdp:'$2.1T',cap:'$0.9T',cur:'BRL',q:'Brazil central bank Bovespa'},
+  566:{name:'Nigeria',flag:'🇳🇬',risk:'med',gdp:'$0.4T',cap:'$0.05T',cur:'NGN',q:'Nigeria oil naira economy Lagos'},
+  818:{name:'Egypt',flag:'🇪🇬',risk:'med',gdp:'$0.4T',cap:'$0.04T',cur:'EGP',q:'Egypt economy pound IMF Suez Canal'},
+  704:{name:'Vietnam',flag:'🇻🇳',risk:'low',gdp:'$0.4T',cap:'$0.2T',cur:'VND',q:'Vietnam manufacturing FDI export tech'},
+  702:{name:'Singapore',flag:'🇸🇬',risk:'low',gdp:'$0.5T',cap:'$0.7T',cur:'SGD',q:'Singapore MAS STI finance hub tech'},
+};
+
+// Risk colour map
+const RC={hi:'#ff3b5c',med:'#ffaa00',low:'#00ff88'};
+const RF={hi:'rgba(255,59,92,.18)',med:'rgba(255,170,0,.09)',low:'rgba(0,255,136,.05)'};
+const RD={hi:'rgba(255,59,92,.45)',med:'rgba(255,170,0,.22)',low:'rgba(0,255,136,.12)'};
+
+// ── D3 MAP ────────────────────────────────────────────────────────────
+const svg=d3.select('#worldSvg');
+const projection=d3.geoNaturalEarth1().scale(310).translate([1000,500]);
+const path=d3.geoPath().projection(projection);
+let zoom=d3.zoom().scaleExtent([1,8]).on('zoom',zoomed);
+svg.call(zoom);
+
+const g=svg.append('g');
+let zoomScale=1;
+
+function zoomed(event){
+  g.attr('transform',event.transform);
+  zoomScale=event.transform.k;
+  document.getElementById('mi-zoom').textContent=`ZOOM: ${zoomScale.toFixed(1)}×`;
+}
+
+// Draw graticule grid
+const graticule=d3.geoGraticule()();
+g.append('path').datum(graticule)
+  .attr('d',path)
+  .attr('fill','none')
+  .attr('stroke','rgba(0,212,255,0.04)')
+  .attr('stroke-width','0.5');
+
+// Draw sphere outline
+g.append('path').datum({type:'Sphere'})
+  .attr('d',path)
+  .attr('fill','rgba(0,212,255,0.02)')
+  .attr('stroke','rgba(0,212,255,0.15)')
+  .attr('stroke-width','0.8');
+
+// Load world topology
+const TOPO_URL='https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json';
+
+d3.json(TOPO_URL).then(world=>{
+  const countries=topojson.feature(world,world.objects.countries);
+  const borders=topojson.mesh(world,world.objects.countries,(a,b)=>a!==b);
+
+  // Country fills
+  g.selectAll('path.country')
+    .data(countries.features)
+    .join('path')
+    .attr('class','country')
+    .attr('d',path)
+    .attr('id',d=>'c'+d.id)
+    .attr('fill',d=>{const cd=CD[parseInt(d.id)];return cd?RF[cd.risk]:'rgba(0,212,255,0.04)';})
+    .attr('stroke',d=>{const cd=CD[parseInt(d.id)];return cd?RC[cd.risk]:'rgba(0,212,255,0.15)';})
+    .attr('stroke-width','0.5')
+    .attr('cursor','pointer')
+    .on('mouseover',function(event,d){
+      const id=parseInt(d.id);
+      const cd=CD[id];
+      if(cd&&id!==selectedId){
+        d3.select(this).attr('fill',RD[cd.risk]).attr('stroke-width','1');
+      }
+      const tip=document.getElementById('mapTip');
+      if(cd){
+        document.getElementById('tipName').textContent=cd.flag+' '+cd.name;
+        document.getElementById('tipSub').textContent=`GDP ${cd.gdp} · ${cd.cur} · Cap ${cd.cap}`;
+        const rc={hi:'var(--re)',med:'var(--am)',low:'var(--gr)'}[cd.risk];
+        document.getElementById('tipRisk').textContent=`RISK: ${cd.risk.toUpperCase()}`;
+        document.getElementById('tipRisk').style.color=rc;
+        tip.classList.add('show');
+      }
+    })
+    .on('mousemove',function(event){
+      const tip=document.getElementById('mapTip');
+      const rect=document.getElementById('mapArea').getBoundingClientRect();
+      let x=event.clientX-rect.left+14, y=event.clientY-rect.top-60;
+      if(x+200>rect.width)x-=220;
+      tip.style.left=x+'px';tip.style.top=y+'px';
+      // Update coords
+      const [lon,lat]=projection.invert([event.offsetX/rect.width*2000,event.offsetY/rect.height*1001])||[0,0];
+      document.getElementById('coords').textContent=`LAT ${lat.toFixed(3)}° · LON ${lon.toFixed(3)}°`;
+    })
+    .on('mouseout',function(event,d){
+      const id=parseInt(d.id);const cd=CD[id];
+      if(id!==selectedId&&cd) d3.select(this).attr('fill',RF[cd.risk]).attr('stroke-width','0.5');
+      document.getElementById('mapTip').classList.remove('show');
+    })
+    .on('click',function(event,d){
+      const id=parseInt(d.id);const cd=CD[id];
+      if(!cd)return;
+      // Reset previous
+      if(selectedId&&selectedId!==id){
+        const prev=CD[selectedId];
+        if(prev) d3.select('#c'+selectedId).attr('fill',RF[prev.risk]).attr('stroke','rgba(0,212,255,0.15)').attr('stroke-width','0.5');
+      }
+      selectedId=id;
+      d3.select(this).attr('fill','rgba(0,212,255,0.22)').attr('stroke','#00d4ff').attr('stroke-width','1.5');
+      document.getElementById('mi-sel').textContent=`SELECTED: ${cd.name.toUpperCase()}`;
+      openCountry(id,cd);
+
+      // Zoom to country
+      const bounds=path.bounds(d);
+      const bw=bounds[1][0]-bounds[0][0], bh=bounds[1][1]-bounds[0][1];
+      const bc=[(bounds[0][0]+bounds[1][0])/2,(bounds[0][1]+bounds[1][1])/2];
+      const scale=Math.min(8,0.85/Math.max(bw/2000,bh/1001));
+      const tx=1000-scale*bc[0], ty=500-scale*bc[1];
+      svg.transition().duration(750).call(zoom.transform,d3.zoomIdentity.translate(tx,ty).scale(scale));
+    });
+
+  // Country borders
+  g.append('path').datum(borders)
+    .attr('d',path)
+    .attr('fill','none')
+    .attr('stroke','rgba(0,212,255,0.08)')
+    .attr('stroke-width','0.3');
+
+  // Add city/hotspot dots for high-risk countries
+  const hotspots=[
+    {lat:31.5,lon:35,label:'Middle East',risk:'hi'},
+    {lat:48.5,lon:33,label:'Ukraine',risk:'hi'},
+    {lat:35.7,lon:51.4,label:'Tehran',risk:'hi'},
+    {lat:40,lon:116,label:'Beijing',risk:'hi'},
+    {lat:25.1,lon:121.5,label:'Taiwan',risk:'hi'},
+  ];
+  hotspots.forEach(h=>{
+    const [x,y]=projection([h.lon,h.lat]);
+    const hg=g.append('g').attr('transform',`translate(${x},${y})`).style('cursor','pointer');
+    hg.append('circle').attr('r',4).attr('fill',RC[h.risk]).attr('opacity',0.9);
+    hg.append('circle').attr('r',4).attr('fill','none').attr('stroke',RC[h.risk])
+      .attr('stroke-width',1).attr('opacity',0)
+      .style('animation',`ping 2s ease-out infinite`);
+    // Ping animation via JS
+    animPing(hg.select('circle:last-child').node());
+  });
+}).catch(err=>{
+  console.warn('TopoJSON load failed, showing fallback grid',err);
+  showFallback();
+});
+
+function animPing(el){
+  if(!el)return;
+  let r=4,op=0.8;
+  function frame(){
+    r+=0.08;op=Math.max(0,0.8-(r-4)/20);
+    d3.select(el).attr('r',r).attr('opacity',op);
+    if(r>24){r=4;op=0.8;}
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function showFallback(){
+  const fa=document.getElementById('worldSvg');
+  fa.innerHTML='<text x="1000" y="500" text-anchor="middle" fill="rgba(0,212,255,0.3)" font-size="16" font-family="JetBrains Mono,monospace">TOPOLOGY LOAD ERROR — CHECK NETWORK CONNECTION</text>';
+}
+
+// ── COUNTRY PANEL ─────────────────────────────────────────────────────
+function openCountry(id,cd){
+  document.getElementById('cpFlag').textContent=cd.flag;
+  document.getElementById('cpName').textContent=cd.name;
+  document.getElementById('cpSub').textContent=`${cd.cur} · GDP ${cd.gdp} · Risk: ${cd.risk.toUpperCase()}`;
+  const rc={hi:'var(--re)',med:'var(--am)',low:'var(--gr)'}[cd.risk];
+  document.getElementById('cpMeta').innerHTML=`
+    <div class="cp-mi"><div class="cpk">GDP</div><div class="cpv">${cd.gdp}</div></div>
+    <div class="cp-mi"><div class="cpk">Mkt Cap</div><div class="cpv">${cd.cap}</div></div>
+    <div class="cp-mi"><div class="cpk">Currency</div><div class="cpv">${cd.cur}</div></div>
+    <div class="cp-mi"><div class="cpk">Risk</div><div class="cpv" style="color:${rc};font-weight:700">${cd.risk.toUpperCase()}</div></div>`;
+  document.getElementById('cpanel').classList.add('open');
+  document.getElementById('cpBody').innerHTML='<div class="cp-nt">LATEST INTELLIGENCE</div><div class="ni-load">Fetching intelligence…</div>';
+  loadCNews(cd);
+}
+
+function closeCP(){
+  document.getElementById('cpanel').classList.remove('open');
+  if(selectedId){
+    const cd=CD[selectedId];
+    if(cd) d3.select('#c'+selectedId).attr('fill',RF[cd.risk]).attr('stroke','rgba(0,212,255,0.15)').attr('stroke-width','0.5');
+    selectedId=null;
+  }
+  document.getElementById('mi-sel').textContent='SELECTED: NONE';
+  svg.transition().duration(600).call(zoom.transform,d3.zoomIdentity);
+}
+
+async function loadCNews(cd){
+  let arts=[];
+  if(CFG.nw){
+    try{
+      const r=await fetch(`https://newsapi.org/v2/everything?q=${encodeURIComponent(cd.q)}&language=en&sortBy=publishedAt&apiKey=${CFG.nw}&pageSize=8`);
+      const j=await r.json();
+      if(j.articles?.length) arts=j.articles;
+    }catch(e){}
+  }
+  if(!arts.length) arts=getDemoNews(cd);
+  const cats=['politics','economy','tech','energy','defence','markets'];
+  const html=arts.slice(0,8).map((a,i)=>{
+    const cat=cats[i%cats.length];
+    const t=san(typeof a==='string'?a:(a.title||'').replace(/\[.*?\]/g,'').trim());
+    const src=san(a.source?.name||'Wire');
+    const time=a.publishedAt?new Date(a.publishedAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'LIVE';
+    const rawUrl=a.url||'';
+    const safeUrl=(rawUrl.startsWith('https://')||rawUrl.startsWith('http://'));
+    const clickAttr=safeUrl?' onclick="window.open(this.dataset.url,\'_blank\',\'noopener,noreferrer\')"':'';
+    const card=document.createElement('div');
+    card.className='ni';
+    if(safeUrl)card.dataset.url=rawUrl;
+    if(safeUrl)card.setAttribute('onclick',"window.open(this.dataset.url,'_blank','noopener,noreferrer')");
+    card.innerHTML='<div class="ni-cat '+cat+'">'+(cat.toUpperCase())+'</div>'
+      +'<div><div class="ni-t">'+t+'</div><div class="ni-m">'+src+' · '+time+'</div></div>';
+    return card.outerHTML;
+  }).join('');
+  document.getElementById('cpBody').innerHTML='<div class="cp-nt">LATEST INTELLIGENCE</div>'+html;
+}
+
+function getDemoNews(cd){
+  const byRisk={
+    hi:[
+      {title:`Geopolitical tensions escalate — ${cd.name} at centre of international dispute`,source:{name:'Reuters'},publishedAt:new Date().toISOString()},
+      {title:`Markets react to ${cd.name} instability — safe-haven assets rally sharply`,source:{name:'Bloomberg'},publishedAt:new Date().toISOString()},
+      {title:`Sanctions exposure assessment updated for ${cd.name} — institutional investors reduce allocation`,source:{name:'FT'},publishedAt:new Date().toISOString()},
+      {title:`${cd.name} central bank emergency measures as ${cd.cur} weakens 3.2%`,source:{name:'WSJ'},publishedAt:new Date().toISOString()},
+      {title:`Energy supply chain at risk as ${cd.name} situation deteriorates`,source:{name:'S&P Global'},publishedAt:new Date().toISOString()},
+      {title:`Defence spending commitments accelerate across region following ${cd.name} developments`,source:{name:'Reuters'},publishedAt:new Date().toISOString()},
+    ],
+    med:[
+      {title:`${cd.name} economy shows resilience despite global headwinds — Q1 GDP beats estimates`,source:{name:'Reuters'},publishedAt:new Date().toISOString()},
+      {title:`Central bank signals cautious easing — ${cd.cur} holds steady against dollar`,source:{name:'Bloomberg'},publishedAt:new Date().toISOString()},
+      {title:`Foreign direct investment in ${cd.name} rises 8% YoY — supply chain diversification driver`,source:{name:'FT'},publishedAt:new Date().toISOString()},
+      {title:`${cd.name} equity market outperforms regional peers — institutional flows positive`,source:{name:'CNBC'},publishedAt:new Date().toISOString()},
+      {title:`Trade partnership deal advances — ${cd.name} positioned as beneficiary of nearshoring trend`,source:{name:'Reuters'},publishedAt:new Date().toISOString()},
+    ],
+    low:[
+      {title:`${cd.name} GDP growth accelerates — strongest quarter in two years at 3.4%`,source:{name:'Reuters'},publishedAt:new Date().toISOString()},
+      {title:`Central bank signals stable rates through 2025 — ${cd.cur} at multi-month high`,source:{name:'Bloomberg'},publishedAt:new Date().toISOString()},
+      {title:`AI and tech investment in ${cd.name} surges as global buildout accelerates`,source:{name:'FT'},publishedAt:new Date().toISOString()},
+      {title:`Equity index hits record high — consumer confidence at post-pandemic peak`,source:{name:'WSJ'},publishedAt:new Date().toISOString()},
+      {title:`${cd.name} trade surplus widens — export competitiveness strengthening`,source:{name:'Reuters'},publishedAt:new Date().toISOString()},
+      {title:`Infrastructure investment programme drives productivity gains in ${cd.name}`,source:{name:'CNBC'},publishedAt:new Date().toISOString()},
+    ],
+  };
+  return byRisk[cd.risk]||byRisk.low;
+}
+
+// ── GLOBAL NEWS FEED ──────────────────────────────────────────────────
+const DEMO_NEWS=[
+  {cat:'politics',co:'🇺🇸 USA',title:'Federal Reserve signals patient approach — two rate cuts expected in 2025',src:'Reuters',impact:'h',time:'2m ago'},
+  {cat:'markets',co:'🌐 GLOBAL',title:'NVIDIA surpasses $2 trillion market cap — AI infrastructure demand accelerating',src:'Bloomberg',impact:'h',time:'5m ago'},
+  {cat:'energy',co:'🇸🇦 Saudi Arabia',title:'OPEC+ extends voluntary output cuts through Q2 — Brent crude rises 2.4%',src:'S&P Global',impact:'h',time:'8m ago'},
+  {cat:'politics',co:'🇨🇳 China',title:'PBoC injects $150B liquidity as property sector recovery stalls in major cities',src:'FT',impact:'h',time:'12m ago'},
+  {cat:'tech',co:'🇹🇼 Taiwan',title:'TSMC Q1 revenue beats estimates by 8% — advanced node demand outstrips supply',src:'WSJ',impact:'h',time:'15m ago'},
+  {cat:'defence',co:'🇺🇦 Ukraine',title:'EU approves €35B aid package — reconstruction bonds to be issued in Q3',src:'Reuters',impact:'m',time:'18m ago'},
+  {cat:'economy',co:'🇪🇺 Eurozone',title:'ECB holds rates at 3.5% — Lagarde signals September cut if inflation cooperates',src:'Bloomberg',impact:'m',time:'22m ago'},
+  {cat:'markets',co:'🇯🇵 Japan',title:'Bank of Japan mulls second rate hike — yen strengthens against dollar',src:'Nikkei',impact:'m',time:'26m ago'},
+  {cat:'politics',co:'🇮🇳 India',title:'India emerges as key beneficiary of China+1 manufacturing strategy',src:'FT',impact:'m',time:'31m ago'},
+  {cat:'energy',co:'🌐 GLOBAL',title:'Natural gas prices fall 4% as European storage levels hit seasonal high',src:'Reuters',impact:'m',time:'35m ago'},
+  {cat:'tech',co:'🇳🇱 Netherlands',title:'ASML H1 order book at record €14.5B — EUV demand driven by AI chip race',src:'Bloomberg',impact:'m',time:'40m ago'},
+  {cat:'economy',co:'🇧🇷 Brazil',title:'Brazil central bank raises rates to 14.25% — inflation fight intensifies',src:'Reuters',impact:'m',time:'44m ago'},
+  {cat:'defence',co:'🇮🇱 Israel',title:'Ceasefire talks resume in Qatar — oil markets react with cautious optimism',src:'AP',impact:'h',time:'48m ago'},
+  {cat:'markets',co:'🇬🇧 UK',title:'FTSE 100 hits record high driven by mining and energy sectors outperforming',src:'FT',impact:'l',time:'52m ago'},
+  {cat:'politics',co:'🇩🇪 Germany',title:'German industrial output falls 2.1% — recession fears deepen for Q1',src:'Bloomberg',impact:'m',time:'56m ago'},
+  {cat:'tech',co:'🇰🇷 South Korea',title:'Samsung advances 2nm chip node ahead of schedule — TSMC competition intensifies',src:'Reuters',impact:'m',time:'1h ago'},
+  {cat:'economy',co:'🇨🇳 China',title:'China exports surge 7.5% YoY — trade surplus widens to multi-year record',src:'WSJ',impact:'h',time:'1h ago'},
+  {cat:'energy',co:'🇳🇴 Norway',title:'Equinor announces $12B North Sea expansion — production to rise 15% by 2027',src:'Reuters',impact:'l',time:'1h ago'},
+  {cat:'markets',co:'🇨🇭 Switzerland',title:'UBS restructuring complete — private wealth division targets $6T AUM by 2026',src:'Bloomberg',impact:'l',time:'1h ago'},
+  {cat:'defence',co:'🇷🇺 Russia',title:'Western nations coordinate new sanctions package targeting energy revenue',src:'Reuters',impact:'h',time:'2h ago'},
+];
+
+const BREAKING=[
+  'FED HOLDS RATES — MARKETS RALLY','NVIDIA CROSSES $2T MARKET CAP','OPEC+ EXTENDS CUTS THROUGH Q2',
+  'TSMC BEATS REVENUE ESTIMATES +8%','CHINA INJECTS $150B LIQUIDITY','EU APPROVES UKRAINE €35B AID',
+  'ECB HOLDS — SEPTEMBER CUT SIGNALLED','BOJ CONSIDERS SECOND RATE HIKE','ISRAEL CEASEFIRE TALKS IN QATAR',
+  'ASML ORDER BOOK AT RECORD €14.5B',
+];
+
+let allNews=[...DEMO_NEWS];
+
+function buildTicker(){
+  const el=document.getElementById('tkIn');
+  const items=BREAKING.map(b=>`<div class="tk-item">▶ ${b}</div>`).join('');
+  el.innerHTML=items+items;
+}
+
+function renderFeed(filt='all'){
+  const el=document.getElementById('feed');
+  let items=filt==='all'?allNews:allNews.filter(n=>n.cat===filt);
+  if(!items.length){el.innerHTML='<div style="padding:20px;text-align:center;color:var(--tm);font-size:10px">No items for this category</div>';return;}
+  const grouped={};
+  items.forEach(n=>{if(!grouped[n.cat])grouped[n.cat]=[];grouped[n.cat].push(n);});
+  let html='';
+  Object.entries(grouped).forEach(([cat,news])=>{
+    html+=`<div class="fsec">${cat.toUpperCase()}</div>`;
+    html+=news.map(n=>`<div class="fitem">
+      <div class="fi-top">
+        <div class="fc ${n.cat}">${n.cat.toUpperCase()}</div>
+        <div class="fco">${san(n.co||'')}</div>
+      </div>
+      <div class="fit">${san(n.title)}</div>
+      <div class="fmeta">
+        <span>${san(n.src||'Wire')}</span>
+        <span>${n.time||'LIVE'}</span>
+        <span class="fimp ${n.impact}">${n.impact==='h'?'▲ HIGH IMPACT':n.impact==='m'?'◆ MODERATE':'● LOW'}</span>
+      </div>
+    </div>`).join('');
+  });
+  el.innerHTML=html;
+  document.getElementById('sbev').textContent=`${items.filter(n=>n.impact==='h').length} high-impact events`;
+}
+
+function fCat(btn,cat){
+  document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');activeFilt=cat;renderFeed(cat);
+}
+
+async function refreshNews(){
+  const btn=document.getElementById('rfBtn');
+  btn.classList.add('sp');
+  if(CFG.nw){
+    try{
+      const r=await fetch(`https://newsapi.org/v2/top-headlines?language=en&category=business&apiKey=${CFG.nw}&pageSize=20`);
+      const j=await r.json();
+      if(j.articles?.length){
+        const cats=['politics','economy','markets','tech','energy','defence'];
+        allNews=j.articles.map((a,i)=>({
+          cat:cats[i%cats.length],co:'🌐 GLOBAL',
+          title:a.title.replace(/\[.*?\]/g,'').trim(),
+          src:a.source?.name||'Reuters',
+          impact:['h','m','l'][i%3],
+          time:a.publishedAt?new Date(a.publishedAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'LIVE',
+          url:a.url
+        }));
+      }
+    }catch(e){}
+  }
+  renderFeed(activeFilt);
+  document.getElementById('sbup').textContent='Updated: '+new Date().toLocaleTimeString();
+  btn.classList.remove('sp');
+}
+
+// Config
+function openM(){document.getElementById('cNw').value='';document.getElementById('cAn').value='';document.getElementById('cfgOv').classList.add('on');}
+function closeM(){document.getElementById('cfgOv').classList.remove('on');}
+function saveC(){
+  // Keys in memory only — NOT saved to localStorage
+  CFG.nw=document.getElementById('cNw').value.trim();CFG.an=document.getElementById('cAn').value.trim();
+  const live=CFG.nw||CFG.an;const b=document.getElementById('mbadge');
+  b.className='mbg '+(live?'live':'demo');b.textContent=live?'⚡ LIVE':'⚡ DEMO';
+  document.getElementById('sbmd').textContent=live?'LIVE MODE — Intelligence feed active':'DEMO — ADD NEWSAPI KEY FOR LIVE INTELLIGENCE';
+  document.getElementById('sbmd').style.color=live?'var(--gr)':'var(--am)';
+  closeM();refreshNews();
+}
+document.getElementById('cfgOv').addEventListener('click',e=>{if(e.target===e.currentTarget)closeM();});
+
+// Init
+buildTicker();renderFeed();
+if(CFG.nw||CFG.an){
+  document.getElementById('mbadge').className='mbg live';
+  document.getElementById('mbadge').textContent='⚡ LIVE';
+  document.getElementById('sbmd').textContent='LIVE MODE — Intelligence feed active';
+  document.getElementById('sbmd').style.color='var(--gr)';
+  refreshNews();
+}
+document.getElementById('sbup').textContent='Updated: '+new Date().toLocaleTimeString();
+setInterval(refreshNews,120000);
+</script>
+</body>
+</html>
