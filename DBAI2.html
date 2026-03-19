@@ -213,6 +213,151 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .mbtn:hover{border-color:var(--b3);color:var(--tx);}
 .mbtn.p{background:var(--cd);border-color:var(--b3);color:var(--cy);}
 .mbtn.p:hover{background:var(--cy);color:var(--bg);}
+
+/* ══════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — World Intel Map
+   Strategy:
+   • Phone: Full-screen map by default, news feed in
+     a slide-up panel, bottom tab bar to switch
+   • Tablet: Map takes 60%, news panel 40%
+   ══════════════════════════════════════════════════════ */
+
+/* ── Tablet (≤1024px) ── */
+@media(max-width:1024px){
+  .body{grid-template-columns:1fr 260px;}
+  .hdr-c .pill.a,.hdr-c .pill.r{display:none;}
+}
+
+/* ── Phone (≤768px) ── */
+@media(max-width:768px){
+  html,body{height:100%;overflow:hidden;}
+  body{font-size:11px;}
+
+  /* ── Header ── */
+  .hdr{padding:0 10px;height:44px;}
+  .hdr-c .pill{display:none;}
+  .clk{font-size:12px;}
+  .mbg{display:none;}
+  .hbtn{padding:3px 8px;font-size:9px;}
+
+  /* ── Nav tabs ── */
+  .nav{padding:0 8px;overflow-x:auto;}
+  .nav::-webkit-scrollbar{display:none;}
+  .ntab{padding:7px 10px;font-size:10px;letter-spacing:.07em;white-space:nowrap;}
+
+  /* ── Body: stacked, map on top ── */
+  .body{
+    display:flex;
+    flex-direction:column;
+    flex:1;
+    overflow:hidden;
+  }
+
+  /* ── Map takes all available space ── */
+  .map-area{
+    flex:1;
+    position:relative;
+    overflow:hidden;
+    min-height:0;
+  }
+
+  /* ── Right panel (news) becomes a slide-up drawer ── */
+  .rp{
+    position:absolute;
+    bottom:0;left:0;right:0;
+    height:60vh;
+    border-left:none;
+    border-top:1px solid var(--b2);
+    transform:translateY(100%);
+    transition:transform .35s cubic-bezier(.4,0,.2,1);
+    z-index:40;
+  }
+  .rp.mob-open{transform:translateY(0);}
+
+  /* Drag handle on the news drawer */
+  .rp::before{
+    content:'';
+    display:block;
+    width:40px;height:4px;
+    background:var(--b2);
+    border-radius:2px;
+    margin:8px auto 4px;
+    flex-shrink:0;
+  }
+
+  /* ── Country intel panel — full screen on mobile ── */
+  .cpanel{max-height:75%;}
+  .cp-nm{font-size:15px;}
+  .cp-fl{font-size:18px;}
+  .cp-meta{flex-wrap:wrap;}
+  .cp-mi{min-width:50%;border-bottom:1px solid var(--b1);}
+  .cp-mi:nth-child(odd){border-right:1px solid var(--b1);}
+  .cp-mi:last-child,.cp-mi:nth-last-child(2):nth-child(odd){border-bottom:none;}
+
+  /* ── Map overlays — smaller on phone ── */
+  .legend{top:auto;bottom:60px;right:8px;padding:7px 10px;font-size:9px;}
+  .leg-t{font-size:8px;margin-bottom:5px;}
+  .leg-r{margin-bottom:3px;font-size:9px;}
+  .leg-d{width:6px;height:6px;}
+  .coords{font-size:9px;padding:2px 10px;bottom:8px;}
+  .map-info{top:8px;left:8px;}
+  .mi-row{font-size:8px;}
+
+  /* ── Corner decorations — smaller ── */
+  .corner{width:18px;height:18px;}
+
+  /* ── Breaking ticker ── */
+  .ticker{height:20px;}
+  .tk-lbl{font-size:8px;padding:0 6px;}
+  .tk-item{font-size:9px;padding:0 12px;}
+
+  /* ── Category filter ── */
+  .cats{padding:5px;}
+  .cbtn{padding:3px 7px;font-size:8px;}
+
+  /* ── News feed ── */
+  .rfbtn{margin:4px;padding:6px;font-size:9px;}
+  .fsec{padding:4px 10px;font-size:8px;}
+  .fitem{padding:8px 10px;}
+  .fit{font-size:10px;}
+  .fmeta{font-size:8px;}
+  .fc{font-size:7px;padding:1px 4px;}
+
+  /* ── Status bar ── */
+  .sb{height:18px;padding:0 10px;font-size:8px;}
+  .sbr{gap:8px;}
+  #sbev,#sbup{display:none;}
+
+  /* ── Mobile tab bar ── */
+  .mob-tabbar-map{
+    display:flex;
+    background:var(--panel);
+    border-top:1px solid var(--b2);
+    flex-shrink:0;
+    z-index:50;
+  }
+  .mob-tab-map{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:8px 4px 6px;gap:3px;
+    cursor:pointer;transition:all .2s;
+    border:none;background:none;
+    font-family:var(--fm);font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--tm);border-top:2px solid transparent;
+  }
+  .mob-tab-map.on{color:var(--cy);border-top-color:var(--cy);}
+  .mob-tab-map svg{width:18px;height:18px;}
+
+  /* ── Modal ── */
+  .modal{width:96vw;}
+  .mbody{padding:12px;}
+}
+
+/* ── Very small phones ── */
+@media(max-width:380px){
+  .ntab{padding:6px 8px;font-size:9px;}
+  .cp-nm{font-size:13px;}
+}
+
 </style>
 </head>
 <body>
@@ -773,6 +918,77 @@ if(CFG.nw||CFG.an){
 }
 document.getElementById('sbup').textContent='Updated: '+new Date().toLocaleTimeString();
 setInterval(refreshNews,120000);
+
+// ── MOBILE MAP/NEWS SWITCHER ─────────────────────────────────────────
+(function(){
+  const isMobile=()=>window.innerWidth<=768;
+
+  function applyMapMobile(){
+    const bar=document.getElementById('mobTabbarMap');
+    const rp=document.querySelector('.rp');
+    if(!bar||!rp)return;
+    if(isMobile()){
+      bar.style.display='flex';
+    } else {
+      bar.style.display='none';
+      rp.classList.remove('mob-open');
+    }
+  }
+
+  window.mobMapTab=function(tab){
+    if(!isMobile())return;
+    const rp=document.querySelector('.rp');
+    const isNews=(tab==='news');
+    if(rp)rp.classList.toggle('mob-open',isNews);
+    ['map','news'].forEach(t=>{
+      const btn=document.getElementById('mobt-'+t);
+      if(btn)btn.classList.toggle('on',t===tab);
+    });
+  };
+
+  // Swipe up on map to show news
+  let touchStartY=0;
+  const mapArea=document.getElementById('mapArea');
+  if(mapArea){
+    mapArea.addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY;},{passive:true});
+    mapArea.addEventListener('touchend',e=>{
+      const dy=touchStartY-e.changedTouches[0].clientY;
+      if(dy>60&&isMobile())mobMapTab('news');
+    },{passive:true});
+  }
+  // Swipe down on news panel to dismiss
+  const rp=document.querySelector('.rp');
+  if(rp){
+    rp.addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY;},{passive:true});
+    rp.addEventListener('touchend',e=>{
+      const dy=e.changedTouches[0].clientY-touchStartY;
+      if(dy>60&&isMobile())mobMapTab('map');
+    },{passive:true});
+  }
+
+  applyMapMobile();
+  window.addEventListener('resize',applyMapMobile);
+})();
+
 </script>
+
+<!-- ── MOBILE BOTTOM TAB BAR (map page) ── -->
+<div class="mob-tabbar-map" id="mobTabbarMap" style="display:none;">
+  <button class="mob-tab-map on" id="mobt-map" onclick="mobMapTab('map')">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <circle cx="10" cy="9" r="4"/>
+      <path d="M10 1C6.1 1 3 4.1 3 8c0 5 7 11 7 11s7-6 7-11c0-3.9-3.1-7-7-7z"/>
+    </svg>
+    Map
+  </button>
+  <button class="mob-tab-map" id="mobt-news" onclick="mobMapTab('news')">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <rect x="2" y="3" width="16" height="14" rx="2"/>
+      <path d="M6 7h8M6 10h8M6 13h5"/>
+    </svg>
+    News Feed
+  </button>
+</div>
+
 </body>
 </html>
